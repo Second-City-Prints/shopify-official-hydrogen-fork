@@ -8,10 +8,6 @@ import Listr from 'listr';
 
 export type TransformOptions = {};
 
-interface MigrateOptions {
-  path: string;
-}
-
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 // @ts-ignore
