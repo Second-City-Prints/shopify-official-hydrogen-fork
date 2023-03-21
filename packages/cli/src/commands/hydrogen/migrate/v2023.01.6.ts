@@ -29,13 +29,26 @@ export default class Migrate extends Command {
 
     const tasks = [
       {
-        title: 'Running test migration',
+        title: 'Adding import for getStorefrontHeaders to server.ts',
         task: async () => {
           await transform(
             path.join(
               __dirname,
               '../../../utils/transforms/',
-              'reverseEverything.js',
+              'insertGetStorefrontHeadersImport.js',
+            ),
+            {path: directory},
+          );
+        },
+      },
+      {
+        title: 'Modifying createStorefrontClient to use getStorefrontHeaders',
+        task: async () => {
+          await transform(
+            path.join(
+              __dirname,
+              '../../../utils/transforms/',
+              'createStorefrontClient.js',
             ),
             {path: directory},
           );

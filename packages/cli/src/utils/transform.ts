@@ -9,7 +9,7 @@ export async function transform(
   const applyTransform = (await import('jscodeshift/dist/testUtils.js'))
     .applyTransform;
   const transforms = await import(transformFile);
-  const filePaths = await path.glob([`${appPath}/app/**/*.tsx`]);
+  const filePaths = await path.glob([`${appPath}/server.ts`]);
 
   if (filePaths.length === 0) {
     throw new AbortError(`No files found for ${appPath}`);
