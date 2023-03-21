@@ -3,7 +3,7 @@ import url from 'url';
 import {commonFlags} from '../../../utils/flags.js';
 import {transform} from '../../../utils/transform.js';
 import Command from '@shopify/cli-kit/node/base-command';
-import {AbortError} from '@shopify/cli-kit/node/error';
+import {format, resolveFormatConfig} from '../../../utils/transpile-ts.js';
 import Listr from 'listr';
 
 export type TransformOptions = {};
@@ -52,6 +52,19 @@ export default class Migrate extends Command {
             ),
             {path: directory},
           );
+        },
+      },
+      {
+        title: 'Formatting server.ts',
+        task: async () => {
+          const serverTsPath = path.join(directory, 'server.ts');
+          const formattedContent = await format(
+            await file.read(serverTsPath),
+            await resolveFormatConfig(serverTsPath),
+            serverTsPath,
+          );
+
+          await file.write(serverTsPath, formattedContent);
         },
       },
     ];

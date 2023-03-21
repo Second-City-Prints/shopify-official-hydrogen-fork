@@ -4,6 +4,7 @@ import {
   insertImportSpecifier,
   hasImportSpecifier,
   insertImportDeclaration,
+  removeImportSpecifier,
 } from './imports.js';
 
 export default function insertGetStorefrontHeadersImport(
@@ -17,23 +18,25 @@ export default function insertGetStorefrontHeadersImport(
   }
 
   if (hasImportDeclaration(j, source, '@shopify/remix-oxygen')) {
+    if (hasImportSpecifier(j, source, 'getBuyerIp', '@shopify/remix-oxygen')) {
+      removeImportSpecifier(j, source, 'getBuyerIp', '@shopify/remix-oxygen');
+    }
+
     if (
-      hasImportSpecifier(
+      !hasImportSpecifier(
         j,
         source,
         'getStorefrontHeaders',
         '@shopify/remix-oxygen',
       )
     ) {
-      return file.source;
+      insertImportSpecifier(
+        j,
+        source,
+        'getStorefrontHeaders',
+        '@shopify/remix-oxygen',
+      );
     }
-
-    insertImportSpecifier(
-      j,
-      source,
-      'getStorefrontHeaders',
-      '@shopify/remix-oxygen',
-    );
   } else {
     insertImportDeclaration(
       j,

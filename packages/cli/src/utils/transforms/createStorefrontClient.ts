@@ -1,4 +1,4 @@
-import type {API, FileInfo} from 'jscodeshift';
+import type {API, FileInfo, ObjectExpression} from 'jscodeshift';
 import {
   hasImportDeclaration,
   insertImportSpecifier,
@@ -20,16 +20,25 @@ export default function modifyCreateStorefrontClient(
     .find(j.CallExpression)
     .filter(
       ({node: callExpression}) =>
+        callExpression.callee.type === 'Identifier' &&
         callExpression.callee.name === 'createStorefrontClient',
     )
     .forEach((path) => {
       path.node.arguments.forEach((arg) => {
-        const propsToKeep = arg.properties.filter((prop) => {
-          return !['buyerIp', 'requestGroupId'].includes(prop.key.name);
-        });
+        if (arg.type !== 'ObjectExpression') {
+          return;
+        }
+
+        const propsToKeep = removePropertiesFromObject(arg, [
+          'buyerIp',
+          'requestGroupId',
+        ]);
 
         const propsToAdd = propsToKeep.find(
-          (prop) => prop.key.name === 'storefrontHeaders',
+          (prop) =>
+            prop.type === 'ObjectProperty' &&
+            prop.key.type === 'Identifier' &&
+            prop.key.name === 'storefrontHeaders',
         )
           ? []
           : [
@@ -46,4 +55,20 @@ export default function modifyCreateStorefrontClient(
     });
 
   return source.toSource();
+}
+
+function removePropertiesFromObject(
+  objectNode: ObjectExpression,
+  propertyKeys: string[],
+) {
+  return objectNode.properties.filter((property) => {
+    if (property.type !== 'ObjectProperty') {
+      return [];
+    }
+
+    if (property.key.type !== 'Identifier') {
+      return [];
+    }
+    return !propertyKeys.includes(property.key.name);
+  });
 }
