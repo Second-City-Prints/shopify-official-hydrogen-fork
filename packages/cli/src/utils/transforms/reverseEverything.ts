@@ -1,8 +1,5 @@
 import type {API, FileInfo, Options} from 'jscodeshift';
 
-import {hasImportDeclaration} from './utils/imports.js';
-import {replaceComponent} from './transforms/replaceComponent.js';
-
 export interface MigrationOptions extends Options {
   relative: boolean;
 }
