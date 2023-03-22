@@ -1,11 +1,8 @@
 import fs from 'node:fs';
 import {file, path} from '@shopify/cli-kit';
 
-export function migrationGuideExamples(testSuite: string) {
-  const markdown = fs.readFileSync(
-    new URL('./migration-guide.md', testSuite),
-    'utf8',
-  );
+export function parseUpgradeGuide(root: string) {
+  const markdown = fs.readFileSync(new URL('./upgrade-guide.md', root), 'utf8');
   const samples = markdown
     .split(/^## /gm)
     .slice(1)
