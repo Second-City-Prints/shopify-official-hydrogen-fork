@@ -36,7 +36,7 @@ export const v2023_1_6 = async (directory: string) => {
     runChangesets([
       [
         {
-          title: `New \`getStorefrontHeaders()\` function`,
+          title: `Adding new \`getStorefrontHeaders()\` function`,
           before: await file.read(path.join(directory, 'server.ts')),
           filename: path.join(directory, 'server.ts'),
         },
