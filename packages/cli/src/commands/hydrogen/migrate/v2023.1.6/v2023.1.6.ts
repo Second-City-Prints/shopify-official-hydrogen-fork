@@ -1,18 +1,18 @@
 import Command from '@shopify/cli-kit/node/base-command';
 import {path, file} from '@shopify/cli-kit';
 import Listr from 'listr';
-import type {API, FileInfo, ObjectExpression} from 'jscodeshift';
+import type {ObjectExpression} from 'jscodeshift';
 
-import {commonFlags} from '../../../utils/flags.js';
-import {runChangesets} from '../../../utils/upgrades.js';
-import type {Transform} from '../../../utils/transform.js';
+import {commonFlags} from '../../../../utils/flags.js';
+import {runChangesets} from '../../../../utils/upgrades.js';
+import type {Transform} from '../../../../utils/transform.js';
 import {
   hasImportDeclaration,
   insertImportSpecifier,
   hasImportSpecifier,
   insertImportDeclaration,
   removeImportSpecifier,
-} from '../../../utils/imports.js';
+} from '../../../../utils/imports.js';
 
 // @ts-ignore
 export default class Migrate extends Command {
@@ -36,7 +36,7 @@ export const v2023_1_6 = async (directory: string) => {
     runChangesets([
       [
         {
-          description: 'Adding import for getStorefrontHeaders to server.ts',
+          title: `New \`getStorefrontHeaders()\` function`,
           before: await file.read(path.join(directory, 'server.ts')),
           filename: path.join(directory, 'server.ts'),
         },

@@ -1,18 +1,19 @@
+import {renderInfo} from '@shopify/cli-kit/node/ui';
 import {applyTransform, type Transform} from './transform.js';
 
-interface Change {
+interface Changeset {
   before?: string;
-  after?: string;
   description?: string;
   filename?: string;
+  title: string;
 }
 
-export function runChangesets(changes: [Change, Transform[] | Transform][]) {
+export function runChangesets(changes: [Changeset, Transform[] | Transform][]) {
   const tasks = changes.map(([changeset, transform]) => {
-    const {before = '', description = '', filename = ''} = changeset;
+    const {title = '', before = '', filename = ''} = changeset;
 
     return {
-      title: description,
+      title,
       task: async () => {
         await applyTransform(transform, {
           source: before,
