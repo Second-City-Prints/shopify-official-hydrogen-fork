@@ -24,7 +24,7 @@
     "@types/tar-fs": "^2.0.1",
     "oclif": "^3.4.2",
     "tempy": "^3.0.0",
-    "vitest": "^0.28.1"
+    "vitest": "^0.29.7"
   },
   "peerDependencies": {
     "@remix-run/react": "^1.14.0",
