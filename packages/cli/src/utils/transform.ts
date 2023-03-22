@@ -1,6 +1,6 @@
 import j, {type Collection, type JSCodeshift} from 'jscodeshift';
 import {format, resolveFormatConfig} from './transpile-ts.js';
-import {file} from '@shopify/cli-kit';
+import {file, path} from '@shopify/cli-kit';
 
 export type Transform = (
   j: JSCodeshift,
@@ -9,17 +9,18 @@ export type Transform = (
 ) => string;
 
 interface Result {
-  filename: string;
   before: string;
   after: string;
   state: 'changed' | 'unchanged';
 }
 
+type Results = Map<string, Result>;
+
 export async function applyTransform(
   transform: Transform[] | Transform,
   files: string[],
-): Promise<Result[]> {
-  const results = [];
+): Promise<Results> {
+  const results = new Map();
   const transforms = Array.isArray(transform) ? transform : [transform];
   const jscodeshift = j.withParser('tsx');
 
@@ -38,8 +39,7 @@ export async function applyTransform(
       filename,
     );
 
-    results.push({
-      filename,
+    results.set(filename, {
       before: source,
       after: formattedContent,
       state:

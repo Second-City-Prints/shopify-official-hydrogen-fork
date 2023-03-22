@@ -3,6 +3,8 @@ import {path} from '@shopify/cli-kit';
 import Flags from '@oclif/core/lib/flags.js';
 import {commonFlags} from '../../utils/flags.js';
 import {v2023_1_6} from '../../upgrades/v2023.1.6/v2023.1.6.js';
+import {simpleGit} from 'simple-git';
+import {AbortError} from '@shopify/cli-kit/node/error';
 
 const VERSIONS = ['2023.1.6'];
 
@@ -13,9 +15,8 @@ export default class Upgrade extends Command {
   static flags = {
     path: commonFlags.path,
     silent: Flags.boolean({
-      name: 'verbose',
-      description: `Output more information about the upgrade process.`,
-      env: 'SHOPIFY_HYDROGEN_FLAG_VERBOSE',
+      name: 'silent',
+      env: 'SHOPIFY_HYDROGEN_FLAG_SILENT',
     }),
     dry: Flags.boolean({
       name: 'dry',
@@ -38,6 +39,15 @@ export default class Upgrade extends Command {
   async run(): Promise<void> {
     const {flags, args} = await this.parse(Upgrade);
     const directory = flags.path ? path.resolve(flags.path) : process.cwd();
+    // TODO: move to cli-kit
+    const isClean = await isGitClean(directory);
+
+    if (!flags.dry && !isClean) {
+      throw new AbortError(
+        `The current directory is not clean.`,
+        `Please commit or stash your changes before running this command.`,
+      );
+    }
 
     let migrations;
 
@@ -46,9 +56,14 @@ export default class Upgrade extends Command {
         migrations = await v2023_1_6(directory, flags);
         break;
       default:
-        throw new Error(`Unknown version ${args.version}`);
+        throw new AbortError(`Unknown version ${args.version}`);
     }
 
     await migrations.run();
   }
+}
+
+async function isGitClean(directory: string): Promise<boolean> {
+  const status = await simpleGit(directory).status();
+  return status.isClean();
 }

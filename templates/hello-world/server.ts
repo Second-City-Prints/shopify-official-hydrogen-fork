@@ -6,6 +6,7 @@ import {
   createCookieSessionStorage,
   type SessionStorage,
   type Session,
+  getBuyerIp,
 } from '@shopify/remix-oxygen';
 
 /**
@@ -43,6 +44,8 @@ export default {
         storeDomain: `https://${env.PUBLIC_STORE_DOMAIN}`,
         storefrontApiVersion: env.PUBLIC_STOREFRONT_API_VERSION || '2023-01',
         storefrontId: env.PUBLIC_STOREFRONT_ID,
+        buyerIp: getBuyerIp(request),
+        requestGroupId: request.headers.get('request-id'),
       });
 
       /**
