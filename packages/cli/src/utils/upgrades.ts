@@ -19,6 +19,7 @@ export async function runChangesets(
   options: {
     dry?: boolean;
     silent?: boolean;
+    diff?: boolean;
   } = {},
 ) {
   const files = await glob(path.join(directory, '/**/*.{js,ts,tsx,jsx}'), {
@@ -43,12 +44,14 @@ export async function runChangesets(
           }));
 
         for (const {pathname, filename, after, diff} of changed) {
-          if (options.dry) {
+          if (options.diff) {
             renderInfo({
               headline: pathname,
               body: output.content`${output.token.linesDiff(diff)}`.value,
             });
-          } else {
+          }
+
+          if (!options.dry) {
             await file.write(filename, after);
           }
         }

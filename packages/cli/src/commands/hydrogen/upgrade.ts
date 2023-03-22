@@ -16,12 +16,18 @@ export default class Upgrade extends Command {
     path: commonFlags.path,
     silent: Flags.boolean({
       name: 'silent',
+      description: `Don't print any output.`,
       env: 'SHOPIFY_HYDROGEN_FLAG_SILENT',
     }),
     dry: Flags.boolean({
       name: 'dry',
       description: `Don't actually make any changes.`,
       env: 'SHOPIFY_HYDROGEN_FLAG_DRY',
+    }),
+    diff: Flags.boolean({
+      name: 'diff',
+      description: `Show a diff of the changes.`,
+      env: 'SHOPIFY_HYDROGEN_FLAG_DIFF',
     }),
   };
 

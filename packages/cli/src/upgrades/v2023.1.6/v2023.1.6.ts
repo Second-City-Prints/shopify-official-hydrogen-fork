@@ -15,6 +15,7 @@ import {parseUpgradeGuide} from '../../utils/upgrades.js';
 interface UpgradeOptions {
   dry?: boolean;
   silent?: boolean;
+  diff?: boolean;
 }
 
 export const v2023_1_6 = async (
