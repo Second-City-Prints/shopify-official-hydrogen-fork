@@ -1,6 +1,7 @@
 import j, {type Collection, type JSCodeshift} from 'jscodeshift';
 import {format, resolveFormatConfig} from './transpile-ts.js';
-import {file, path} from '@shopify/cli-kit';
+import {file} from '@shopify/cli-kit';
+import {diffLines, Change} from 'diff';
 
 export type Transform = (
   j: JSCodeshift,
@@ -8,11 +9,19 @@ export type Transform = (
   sourcePath: string,
 ) => string;
 
-interface Result {
-  before: string;
-  after: string;
-  state: 'changed' | 'unchanged';
-}
+type Result =
+  | {
+      before: string;
+      after: string;
+      state: 'unchanged';
+      diff: never;
+    }
+  | {
+      before: string;
+      after: string;
+      state: 'changed';
+      diff: Change[];
+    };
 
 type Results = Map<string, Result>;
 
@@ -39,11 +48,14 @@ export async function applyTransform(
       filename,
     );
 
+    const changed = source !== formattedContent;
+    const diff = changed ? diffLines(source, formattedContent) : null;
+
     results.set(filename, {
       before: source,
       after: formattedContent,
-      state:
-        source === newSource ? ('unchanged' as const) : ('changed' as const),
+      diff,
+      state: changed ? ('changed' as const) : ('unchanged' as const),
     });
   }
 

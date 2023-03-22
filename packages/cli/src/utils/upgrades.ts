@@ -1,5 +1,5 @@
 import {output, path, file} from '@shopify/cli-kit';
-import {renderSuccess} from '@shopify/cli-kit/node/ui';
+import {renderInfo, renderSuccess} from '@shopify/cli-kit/node/ui';
 import {applyTransform, type Transform} from './transform.js';
 import fs from 'node:fs';
 import glob from 'fast-glob';
@@ -33,29 +33,29 @@ export async function runChangesets(
       task: async () => {
         const results = await applyTransform(transforms, files);
         if (!options.silent) output.info(description);
-        for (const [filename, result] of results) {
-          switch (result.state) {
-            case 'unchanged':
-              break;
-            case 'changed':
-              if (options.dry) {
-                output.info('Before:');
-                output.info(result.before);
-                output.info('After:');
-                output.info(result.after);
-              }
 
-              if (!options.dry) {
-                await file.write(filename, result.after);
-              }
-          }
-        }
         const changed = Array.from(results.entries())
           .filter(([_, result]) => result.state === 'changed')
           .map(([filename, result]) => ({
             ...result,
+            filename,
             pathname: path.relative(directory, filename),
           }));
+
+        for (const {pathname, filename, after, diff} of changed) {
+          if (options.dry) {
+            renderInfo({
+              headline: pathname,
+              body: output.content`${output.token.linesDiff(diff)}`.value,
+            });
+          } else {
+            await file.write(filename, after);
+          }
+        }
+
+        if (options.dry) {
+          return;
+        }
 
         renderSuccess({
           headline: `${changed.length} files changed`,
