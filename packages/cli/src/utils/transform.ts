@@ -9,39 +9,43 @@ export type Transform = (
 ) => string;
 
 interface Result {
-  source: string;
+  filename: string;
+  before: string;
+  after: string;
   state: 'changed' | 'unchanged';
 }
 
 export async function applyTransform(
   transform: Transform[] | Transform,
-  {
-    source,
-    filename,
-  }: {
-    source: string;
-    filename: string;
-  },
-): Promise<Result> {
+  files: string[],
+): Promise<Result[]> {
+  const results = [];
   const transforms = Array.isArray(transform) ? transform : [transform];
-
-  let newSource = source;
   const jscodeshift = j.withParser('tsx');
 
-  for (const t of transforms) {
-    newSource = t(jscodeshift, jscodeshift(newSource), filename) || newSource;
+  for (const filename of files) {
+    const source = await file.read(filename);
+
+    let newSource = source;
+
+    for (const t of transforms) {
+      newSource = t(jscodeshift, jscodeshift(newSource), filename) || newSource;
+    }
+
+    const formattedContent = await format(
+      newSource,
+      await resolveFormatConfig(filename),
+      filename,
+    );
+
+    results.push({
+      filename,
+      before: source,
+      after: formattedContent,
+      state:
+        source === newSource ? ('unchanged' as const) : ('changed' as const),
+    });
   }
 
-  const formattedContent = await format(
-    newSource,
-    await resolveFormatConfig(filename),
-    filename,
-  );
-
-  await file.write(filename, formattedContent);
-
-  return {
-    source: newSource,
-    state: source === newSource ? 'unchanged' : 'changed',
-  };
+  return results;
 }

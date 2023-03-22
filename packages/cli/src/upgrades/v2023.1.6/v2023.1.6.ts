@@ -1,5 +1,5 @@
-import {path} from '@shopify/cli-kit';
-import Listr from 'listr';
+import {path, ui} from '@shopify/cli-kit';
+
 import type {ObjectExpression} from 'jscodeshift';
 import type {Transform} from '../../utils/transform.js';
 import {
@@ -10,28 +10,27 @@ import {
   removeImportSpecifier,
 } from '../../utils/imports.js';
 import {runChangesets} from '../../utils/upgrades.js';
-import {parseUpgradeGuide} from '../../utils/test.js';
+import {parseUpgradeGuide} from '../../utils/upgrades.js';
 
-export const v2023_1_6 = async (directory: string) => {
-  const testCases = parseUpgradeGuide(import.meta.url);
+interface UpgradeOptions {
+  dry?: boolean;
+  silent?: boolean;
+}
 
-  const changes: Parameters<typeof runChangesets>[0] = testCases.map(
-    (change) => {
-      const {before = '', title = '', description = '', filename = ''} = change;
+export const v2023_1_6 = async (
+  directory: string,
+  options: UpgradeOptions = {},
+) => {
+  const changes = parseUpgradeGuide(import.meta.url);
 
-      return [
-        {
-          title,
-          description,
-          before,
-          filename: path.join(directory, filename),
-        },
-        // TODO How to import the modules and generate this array dynamically?
-        [insertNewImports(), insertNewStorefrontParams()],
-      ];
-    },
+  const tasks = ui.newListr(
+    await runChangesets(
+      directory,
+      changes,
+      [insertNewImports(), insertNewStorefrontParams()],
+      options,
+    ),
   );
-  const tasks = new Listr(runChangesets(changes));
 
   return tasks;
 };
